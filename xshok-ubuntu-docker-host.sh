@@ -169,21 +169,6 @@ if [ "${SWAPFILE_SIZE}" != "0" ] ; then
   swapon --show
 fi
 
-## Pretty MOTD BANNER
-if [ -z "${NO_MOTD_BANNER}" ] ; then
-  if [ ! -f "/etc/update-motd.d/99-extremeshok" ] ; then
-    sed -i 's|PrintMotd no|PrintMotd yes|g' /etc/ssh/sshd_config
-    cat <<'EOF' > /etc/update-motd.d/99-extremeshok
-   This system is optimised by:            https://eXtremeSHOK.com
-     __   ___                            _____ _    _  ____  _  __
-     \ \ / / |                          / ____| |  | |/ __ \| |/ /
-  ___ \ V /| |_ _ __ ___ _ __ ___   ___| (___ | |__| | |  | | ' /
- / _ \ > < | __| '__/ _ \ '_ ` _ \ / _ \\___ \|  __  | |  | |  <
-|  __// . \| |_| | |  __/ | | | | |  __/____) | |  | | |__| | . \
- \___/_/ \_\\__|_|  \___|_| |_| |_|\___|_____/|_|  |_|\____/|_|\_\
-EOF
-  fi
-fi
 
 ## Increase max user watches
 # BUG FIX : No space left on device
