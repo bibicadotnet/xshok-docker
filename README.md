@@ -36,7 +36,7 @@ Turns a fresh ubuntu install into an optimised docker host
 * to set the swapfile size to 1GB, set the env SWAPFILE_SIZE to 1 (export SWAPFILE_SIZE=1)
 * Disable swapfile (export SWAPFILE_SIZE=0)
 ```
-wget https://raw.githubusercontent.com/extremeshok/xshok-docker/master/xshok-ubuntu-docker-host.sh -O xshok-ubuntu-docker-host.sh && chmod +x xshok-ubuntu-docker-host.sh && ./xshok-ubuntu-docker-host.sh
+wget https://raw.githubusercontent.com/bibicadotnet/xshok-docker/master/xshok-ubuntu-docker-host.sh -O xshok-ubuntu-docker-host.sh && chmod +x xshok-ubuntu-docker-host.sh && ./xshok-ubuntu-docker-host.sh
 ```
 
 # xshok-docker.sh  (single script replaces all separate scripts)
