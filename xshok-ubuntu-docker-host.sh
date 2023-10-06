@@ -157,17 +157,6 @@ EOF
 service systemd-timesyncd start
 timedatectl set-ntp true
 
-## Create a swapfile
-SWAPFILE_SIZE=${SWAPFILE_SIZE:-4}
-if [ "${SWAPFILE_SIZE}" != "0" ] ; then
-  echo "Creating ${SWAPFILE_SIZE}G swapfile"
-  fallocate -l ${SWAPFILE_SIZE}G /swapfile
-  chmod 600 /swapfile
-  mkswap /swapfile
-  swapon /swapfile
-  echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
-  swapon --show
-fi
 
 
 ## Increase max user watches
@@ -255,13 +244,6 @@ cat <<EOF > /etc/sysctl.d/99-xs-tcp-fastopen.conf
 # eXtremeSHOK.com
 # TCP fastopen
 net.ipv4.tcp_fastopen=3
-EOF
-
-## Bugfix: high swap usage with low memory usage
-cat <<EOF > /etc/sysctl.d/99-xs-swappiness.conf
-# eXtremeSHOK.com
-# Bugfix: high swap usage with low memory usage
-vm.swappiness=10
 EOF
 
 ## FS Optimising
@@ -414,78 +396,5 @@ systemctl restart systemd-journald.service
 journalctl --vacuum-size=64M --vacuum-time=1d;
 journalctl --rotate
 
-# Install Borgbackup and Borgmatic
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install borgbackup borgmatic
-#Install a sample Borgmatic sample config
-cat <<EOF > /etc/borgmatic/config.yaml
-# eXtremeSHOK.com
-# Where to look for files to backup, and where to store those backups. See
-# https://borgbackup.readthedocs.io/en/stable/quickstart.html and
-# https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create for details.
-location:
-    source_directories:
-        - /datastore
-        - /etc
-
-    repositories:
-        - STORAGE@AT.LOCATION.COM:repo
-
-    exclude_patterns:
-        - '*.pyc'
-        - ~/*/.git
-
-    exclude_caches: true
-
-    exclude_if_present:
-        - .nobackup
-
-storage:
-    compression: auto,zstd
-    encryption_passphrase: 'YOUR-ENCRYPTION-PASSPHRASE-HERE'
-    archive_name_format: '{hostname}-{now}'
-
-retention:
-    keep_hourly: 24
-    keep_daily: 7
-    keep_weekly: 4
-    keep_monthly: 6
-    keep_yearly: 0
-    prefix: '{hostname}-'
-
-consistency:
-    checks:
-        - disabled
-    check_last: 3
-    prefix: '{hostname}-'
-
-hooks:
-    before_backup:
-        - echo "`date` - Starting backup"
-    after_backup:
-        - echo "`date` - Finished backup"
-EOF
-echo "Sample borgmatic config installed at : /etc/borgmatic/config.yaml"
-
-## Docker-ce
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-add-apt-repository "deb [arch=$(dpkg-architecture -q DEB_BUILD_ARCH)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-apt-get update > /dev/null 2>&1
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::='--force-confdef' install docker-ce docker-ce-cli containerd.io aufs-tools cgroupfs-mount docker-ce-rootless-extras slirp4netns
-
-## Docker-compose
-curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
-ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-
-##  Download eXtremeSHOK.com Docker
-if [ ! -d "/datastore" ] ; then
-  mkdir -p /datastore
-  cd /datastore || exit
-  wget https://raw.githubusercontent.com/extremeshok/xshok-docker/master/xshok-docker.sh -O /datastore/xshok-docker.sh && chmod +x /datastore/xshok-docker.sh
-fi
-
-echo "eXtremeSHOK.com Optimised" > /etc/extremeshok
-
-cat /etc/update-motd.d/99-extremeshok
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
